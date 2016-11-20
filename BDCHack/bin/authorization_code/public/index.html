@@ -63,6 +63,7 @@
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script>
       (function() {
+
         /**
          * Obtains parameters from the hash of the URL
          * @return Object
@@ -74,18 +75,26 @@
           while ( e = r.exec(q)) {
              hashParams[e[1]] = decodeURIComponent(e[2]);
           }
+
           return hashParams;
+
         }
+
         var userProfileSource = document.getElementById('user-profile-template').innerHTML,
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
+
         var oauthSource = document.getElementById('oauth-template').innerHTML,
             oauthTemplate = Handlebars.compile(oauthSource),
             oauthPlaceholder = document.getElementById('oauth');
+
         var params = getHashParams();
+        var artists = [];
+        var tracks = [];
         var access_token = params.access_token,
             refresh_token = params.refresh_token,
             error = params.error;
+
         if (error) {
           alert('There was an error during the authentication');
         } else {
@@ -95,22 +104,35 @@
               access_token: access_token,
               refresh_token: refresh_token
             });
+
             $.ajax({
-                url: 'https://api.spotify.com/v1/me/top/artists',
+                url: 'https://api.spotify.com/v1/me/top/tracks',
                 headers: {
                   'Authorization': 'Bearer ' + access_token
                 },
                 success: function(response) {
                   userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+                  var artists = [];
+                  
+                  console.log(response);
+                  for(i = 0;i<response.items.length;i++){
+                    tracks.push(response.items[i].name);
+                    artists.push(response.items[i].artists[0].name);
+                    
+                  }
+                  console.log(artists);
+                  console.log(tracks);
+                  
                   $('#login').hide();
                   $('#loggedin').show();
                 }
-            });
+            });            
           } else {
               // render initial screen
               $('#login').show();
               $('#loggedin').hide();
           }
+
           document.getElementById('obtain-new-token').addEventListener('click', function() {
             $.ajax({
               url: '/refresh_token',
@@ -122,6 +144,7 @@
               oauthPlaceholder.innerHTML = oauthTemplate({
                 access_token: access_token,
                 refresh_token: refresh_token
+
               });
             });
           }, false);
@@ -130,6 +153,8 @@
     </script>
   </body>
 </html>
+
+
 
 
 
